@@ -1,16 +1,16 @@
-# {{REPO_NAME}}
+# trustushealth-portal-frontend
 
 ## Overview
-{{REPO_DESCRIPTION}}
+Repository created from template.
 
 ---
 
 ## Repository Details
 
-- **Owner:** {{OWNER}}
-- **Repository:** {{REPO_NAME}}
-- **Default Branch:** {{DEFAULT_BRANCH}}
-- **Created On:** {{CREATED_DATE}}
+- **Owner:** TrustUsHealth
+- **Repository:** trustushealth-portal-frontend
+- **Default Branch:** main
+- **Created On:** 2026-11-07
 
 ---
 
@@ -18,8 +18,8 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/{{OWNER}}/{{REPO_NAME}}.git
-   cd {{REPO_NAME}}
+   git clone https://github.com/TrustUsHealth/trustushealth-portal-frontend.git
+   cd trustushealth-portal-frontend
    ```
 
 2. Set up your environment as required.
