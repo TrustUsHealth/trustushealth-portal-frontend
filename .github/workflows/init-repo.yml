@@ -1,0 +1,41 @@
+name: Initialize Repository
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  init:
+    if: vars.IS_TEMPLATE != 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set variables
+        run: |
+          echo "REPO_NAME=$(basename $GITHUB_REPOSITORY)" >> $GITHUB_ENV
+          echo "OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)" >> $GITHUB_ENV
+          echo "DEFAULT_BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
+          echo "CREATED_DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+
+      - name: Replace placeholders
+        run: |
+          sed -i "s/{{REPO_NAME}}/${REPO_NAME}/g" README.md
+          sed -i "s/{{OWNER}}/${OWNER}/g" README.md
+          sed -i "s/{{DEFAULT_BRANCH}}/${DEFAULT_BRANCH}/g" README.md
+          sed -i "s/{{CREATED_DATE}}/${CREATED_DATE}/g" README.md
+          sed -i "s/{{REPO_DESCRIPTION}}/Repository created from template./g" README.md
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add README.md
+          git commit -m "chore: initialize repository from template" || echo "No changes to commit"
+          git push
