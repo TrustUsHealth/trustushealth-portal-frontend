@@ -1,0 +1,32 @@
+# Full local stack: frontend + backend image from GHCR + MongoDB + Mailpit (OTP emails at http://localhost:8025).
+# Replace <owner> with your GitHub org/user and `docker login ghcr.io` once.
+services:
+  frontend:
+    build:
+      context: .
+      args: { BACKEND_URL: "http://backend:8000" }
+    environment: { BACKEND_URL: "http://backend:8000" }
+    ports: ["3000:3000"]
+    depends_on: [backend]
+  backend:
+    image: ghcr.io/<owner>/trustushealth-portal-backend:main
+    environment:
+      ENVIRONMENT: local
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DB: trustushealth
+      JWT_SECRET: local-development-secret-change-me-0123456789
+      BOOTSTRAP_ADMIN_EMAIL: admin@example.com
+      MAIL_TRANSPORT: smtp
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      FRONTEND_ORIGIN: http://localhost:3000
+    ports: ["8000:8000"]
+    depends_on: [mongo, mailpit]
+  mongo:
+    image: mongo:7
+    volumes: ["mongo-data:/data/db"]
+  mailpit:
+    image: axllent/mailpit
+    ports: ["8025:8025"]
+volumes:
+  mongo-data:

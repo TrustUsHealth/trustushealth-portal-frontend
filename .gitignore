@@ -1,22 +1,9 @@
-# Node
-node_modules/
-dist/
-build/
+node_modules
+.next
+out
+.open-next
+.wrangler
 .env
-
-# Python
-__pycache__/
-*.pyc
-.venv/
-
-# Logs
-logs/
-*.log
-
-# OS
-.DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
+.env.local
+next-env.d.ts
+*.tsbuildinfo
