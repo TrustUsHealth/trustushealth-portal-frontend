@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
-import { ArrowLeft, Check, Eye, FileUp, FlaskConical, Loader2, PencilLine, UploadCloud } from "lucide-react";
+import { ArrowLeft, Check, Eye, FileUp, Loader2, PencilLine, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import { Alert } from "@/components/ui/alert";
 import { Button, buttonStyles } from "@/components/ui/button";
@@ -40,17 +40,17 @@ function Stepper({ step, lab, labName, goto }: { step: Step; lab: string | null;
   ];
   const order = ["lab", "source", "form"];
   return (
-    <ol className="mb-6 flex items-center gap-2 overflow-x-auto" aria-label="Progress">
+    <ol className="mb-7 flex flex-wrap items-center gap-x-3 gap-y-2 overflow-x-auto" aria-label="Progress">
       {items.map((it, i) => {
         const current = it.id === step;
         const reachable = order.indexOf(it.id) < order.indexOf(step);
         return (
-          <li key={it.id} className="flex shrink-0 items-center gap-2">
+          <li key={it.id} className="flex shrink-0 items-center gap-2.5">
             <button disabled={!reachable} onClick={() => goto(it.id)} aria-current={current ? "step" : undefined}
-              className={cn("inline-flex h-10 items-center gap-2 rounded-full border px-3.5 text-sm font-semibold transition-colors",
+              className={cn("inline-flex h-11 items-center gap-2.5 rounded-full border px-4 text-[15px] font-semibold transition-colors",
                 current ? "border-slate-nav bg-slate-nav text-white" : it.done ? "border-ok/30 bg-ok-soft text-ok" : "border-line bg-white text-ink-muted", reachable && "hover:border-slate-nav")}>
-              <span className={cn("grid h-5 w-5 place-items-center rounded-full text-[11px]", current ? "bg-white/20" : it.done ? "bg-ok text-white" : "bg-line/60")}>
-                {it.done && !current ? <Check className="h-3 w-3" aria-hidden /> : i + 1}
+              <span className={cn("grid size-6 place-items-center rounded-full text-xs", current ? "bg-white/20" : it.done ? "bg-ok text-white" : "bg-line/60")}>
+                {it.done && !current ? <Check className="size-3.5" aria-hidden /> : i + 1}
               </span>
               {it.label}
             </button>
@@ -84,12 +84,12 @@ function UploadZone({ onFile, disabled }: { onFile: (f: File) => void; disabled?
         onDragOver={(e) => { e.preventDefault(); setOver(true); }}
         onDragLeave={() => setOver(false)}
         onDrop={(e) => { e.preventDefault(); setOver(false); take(e.dataTransfer.files[0]); }}
-        className={cn("flex min-h-56 flex-col items-center justify-center rounded-card border-2 border-dashed bg-white p-6 text-center transition-colors", over ? "border-brand bg-brand-soft/30" : "border-line")}
+        className={cn("flex min-h-72 flex-col items-center justify-center rounded-card border-2 border-dashed bg-white p-8 text-center transition-colors", over ? "border-brand bg-brand-soft/30" : "border-line")}
       >
-        <span className="grid h-14 w-14 place-items-center rounded-2xl bg-slate-nav text-white"><UploadCloud className="h-7 w-7" aria-hidden /></span>
-        <h3 className="mt-4 text-lg font-semibold">Upload the lab report</h3>
-        <p className="mt-1 max-w-xs text-sm text-ink-muted">Drop a {cfg.upload_allowed.map((e) => e.toUpperCase()).join(" or ")} here, or pick one from your phone or computer. Up to {cfg.upload_max_mb} MB.</p>
-        <Button variant="primary" size="lg" className="mt-5" disabled={disabled} onClick={() => input.current?.click()}><FileUp className="h-4 w-4" aria-hidden />Choose file</Button>
+        <span className="grid size-16 place-items-center rounded-2xl bg-slate-nav text-white"><UploadCloud className="size-8" aria-hidden /></span>
+        <h3 className="mt-5 text-xl font-semibold">Upload the lab report</h3>
+        <p className="mt-1 max-w-sm text-[15px] text-ink-muted">Drop a {cfg.upload_allowed.map((e) => e.toUpperCase()).join(" or ")} here, or pick one from your phone or computer. Up to {cfg.upload_max_mb} MB.</p>
+        <Button variant="primary" size="lg" className="mt-5" disabled={disabled} onClick={() => input.current?.click()}><FileUp className="size-5" aria-hidden />Choose file</Button>
         <input ref={input} type="file" accept={accept} className="sr-only" tabIndex={-1} onChange={(e) => { take(e.target.files?.[0]); e.target.value = ""; }} />
       </div>
       {err && <Alert kind="error" title="That file cannot be used" className="mt-3">{err}</Alert>}
@@ -187,33 +187,49 @@ export function NewEntryView() {
 
   return (
     <>
-      <PageHeader title="New patient entry" description="Pick the lab first so its reading rules load. Every value stays editable before you save."
-        back={<Link href="/patient_registry" className={buttonStyles({ variant: "ghost", size: "sm" })}><ArrowLeft className="h-4 w-4" aria-hidden />All entries</Link>} />
+      <div className="[&_h1]:text-[28px] [&_p]:text-[15px]">
+        <PageHeader title="New patient entry" description="Choose the lab first so the right reading rules load. Then upload the report or type the details in."
+          back={<Link href="/patient_registry" className={buttonStyles({ variant: "ghost", size: "sm" })}><ArrowLeft className="h-4 w-4" aria-hidden />All entries</Link>} />
+      </div>
       <RegistryNav />
       <Stepper step={step} lab={lab} labName={lab ? labNames[lab] : undefined} goto={goto} />
 
       {step === "lab" && (
-        <section aria-label="Choose laboratory" className="animate-pop-in">
+        <section aria-labelledby="lab-heading" className="animate-pop-in">
+          <h2 id="lab-heading" className="mb-4 text-xl font-semibold">Which lab is this for?</h2>
           <LabSelector module="patient_registry" value={lab} onChange={(k) => { setLab(k); setParse(null); setStep("source"); }} />
         </section>
       )}
 
       {step === "source" && lab && (
-        <section aria-label="Choose how to enter" className="animate-pop-in">
+        <section aria-labelledby="source-heading" className="animate-pop-in">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <h2 id="source-heading" className="text-xl font-semibold">How do you want to add the patient?</h2>
+            <span className="rounded-full border border-info/25 bg-info-soft px-3 py-1 text-sm font-semibold text-info">{labNames[lab] ?? lab}</span>
+            <Button variant="link" onClick={() => goto("lab")} className="text-sm">Change lab</Button>
+          </div>
           {parsing ? (
             <Card><CardBody className="flex flex-col items-center py-14 text-center">
-              <Loader2 className="h-9 w-9 animate-spin text-brand" aria-hidden />
-              <h3 className="mt-4 text-lg font-semibold">Reading {parsing}</h3>
-              <p className="mt-1 text-sm text-ink-muted">Using {labNames[lab] ?? lab} rules. This takes a few seconds.</p>
+              <Loader2 className="size-10 animate-spin text-brand" aria-hidden />
+              <h3 className="mt-4 text-xl font-semibold">Reading {parsing}</h3>
+              <p className="mt-1 text-[15px] text-ink-muted">Using {labNames[lab] ?? lab} rules. This takes a few seconds.</p>
             </CardBody></Card>
           ) : (
-            <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-              <UploadZone onFile={onFile} />
-              <button onClick={() => { setParse(null); setStep("form"); }} className="flex min-h-56 flex-col items-center justify-center rounded-card border border-line bg-white p-6 text-center shadow-card transition-all hover:-translate-y-0.5 hover:border-slate-nav/50">
-                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-brand-soft text-brand"><PencilLine className="h-7 w-7" aria-hidden /></span>
-                <h3 className="mt-4 text-lg font-semibold">Type it in</h3>
-                <p className="mt-1 max-w-xs text-sm text-ink-muted">No report yet? Only name, registration date and lab are needed. Add the rest later.</p>
-              </button>
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+              <div>
+                <h3 className="mb-3 flex items-center gap-2 text-base font-semibold"><UploadCloud className="size-5 text-ink-muted" aria-hidden />Upload the lab report</h3>
+                <UploadZone onFile={onFile} />
+                <p className="mt-3 text-sm text-ink-muted">Every value we read is editable on the next screen. Fields we are unsure about are marked <span className="font-semibold text-warn">Please verify</span>.</p>
+              </div>
+              <div>
+                <h3 className="mb-3 flex items-center gap-2 text-base font-semibold"><PencilLine className="size-5 text-ink-muted" aria-hidden />No report yet?</h3>
+                <button onClick={() => { setParse(null); setStep("form"); }} className="flex min-h-72 w-full flex-col items-center justify-center rounded-card border border-line bg-white p-7 text-center shadow-card transition-all hover:-translate-y-0.5 hover:border-slate-nav/50">
+                  <span className="grid size-16 place-items-center rounded-2xl bg-brand-soft text-brand"><PencilLine className="size-8" aria-hidden /></span>
+                  <h3 className="mt-5 text-xl font-semibold">Type it in</h3>
+                  <p className="mt-1 max-w-xs text-[15px] text-ink-muted">Only name, registration date and the lab are needed. Add the rest later.</p>
+                  <span className={cn(buttonStyles({ variant: "primary", size: "lg" }), "mt-5")}><PencilLine className="size-5" aria-hidden />Enter manually</span>
+                </button>
+              </div>
             </div>
           )}
           {parseError && <Alert kind="error" title="Could not read that report" className="mt-4" action={<Button size="sm" onClick={() => { setParse(null); setStep("form"); }}>Type it in instead</Button>}>{parseError}</Alert>}
@@ -221,10 +237,16 @@ export function NewEntryView() {
       )}
 
       {step === "form" && lab && (
-        <section aria-label="Review and save" className={cn("animate-pop-in grid gap-6", reportPath && "lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]")}>
+        <section aria-label="Review and save" className="animate-pop-in">
+          <div className="mb-5 flex flex-wrap items-center gap-3">
+            <span className="rounded-full border border-info/25 bg-info-soft px-3 py-1 text-sm font-semibold text-info">{labNames[lab] ?? lab}</span>
+            <span className="text-[15px] text-ink-muted">{parse ? `Read from ${parse.filename}` : "Manual entry"}</span>
+            <Button variant="link" onClick={() => goto("source")} className="text-sm">{parse ? "Upload a different file" : "Change how I add it"}</Button>
+          </div>
+          <div className={cn("grid gap-6", reportPath && "lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]")}>
           {reportPath && (
-            <div className="lg:sticky lg:top-24 lg:self-start">
-              <Button className="mb-3 w-full lg:hidden" onClick={() => setShowReport((s) => !s)}><Eye className="h-4 w-4" aria-hidden />{showReport ? "Hide report" : "View report beside the form"}</Button>
+            <div className="lg:self-start">
+              <Button className="mb-3 w-full lg:hidden" onClick={() => setShowReport((s) => !s)}><Eye className="size-5" aria-hidden />{showReport ? "Hide report" : "View the report"}</Button>
               <div className={cn(showReport ? "block" : "hidden", "lg:block")}>
                 <PdfPreview path={reportPath} title={parse?.filename ?? "Report"} />
               </div>
@@ -232,8 +254,8 @@ export function NewEntryView() {
             </div>
           )}
           <Card className="min-w-0">
-            <CardBody className="space-y-5">
-              <div className="flex items-center gap-2 text-sm text-ink-muted"><FlaskConical className="h-4 w-4" aria-hidden />Laboratory: <b className="text-ink-heading">{labNames[lab] ?? lab}</b>{!parse && <span>· manual entry</span>}</div>
+            <CardBody className="space-y-6">
+              <h2 className="text-xl font-semibold">Check the patient details</h2>
               {hints}
               {fieldsLoading ? <Spinner label="Loading form" /> : fieldsError || !fields ? (
                 <Alert kind="error" title="Could not load the form">{errorMessage(fieldsError)}</Alert>
@@ -247,6 +269,7 @@ export function NewEntryView() {
                   busy={saving}
                   submitLabel="Save entry"
                   autoFocusName={!parse}
+                  comfortable
                   onSubmit={(v) => save(v)}
                   onCancel={() => router.push("/patient_registry")}
                   footerNote="Bill number is assigned when you save."
@@ -254,6 +277,7 @@ export function NewEntryView() {
               )}
             </CardBody>
           </Card>
+          </div>
         </section>
       )}
 

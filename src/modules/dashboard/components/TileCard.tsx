@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, FlaskConical, Layers, Lock, Hourglass } from "lucide-react";
+import { ArrowUpRight, Eye, EyeOff, FlaskConical, Layers, Lock, Hourglass } from "lucide-react";
 import { toast } from "sonner";
 import { PendingPill, Pill } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ export function TileCard({ tile, admin, adminMeta }: { tile: TileOut; admin: boo
         <div className="mt-3 flex flex-wrap gap-1.5">
           {tile.submodules.slice(0, 5).map((s) => (
             <Pill key={s.key} className="border-line bg-ivory text-ink-muted">
-              {s.kind === "lab" ? <FlaskConical className="h-3 w-3" aria-hidden /> : <Layers className="h-3 w-3" aria-hidden />}
+              {tile.key !== "patient_registry" && (s.kind === "lab" ? <FlaskConical className="h-3 w-3" aria-hidden /> : <Layers className="h-3 w-3" aria-hidden />)}
               {s.name}
             </Pill>
           ))}
@@ -79,11 +79,15 @@ export function TileCard({ tile, admin, adminMeta }: { tile: TileOut; admin: boo
           </Button>
         )}
         {admin && adminMeta?.staff_eligible && (
-          <label className="relative z-10 ml-auto flex items-center gap-2 text-xs font-semibold text-ink">
-            Visible to staff
-            <Switch
-              label={`Visible to staff: ${tile.name}`}
-              checked={adminMeta.visible_to_staff}
+            <label className="relative z-10 -mx-4 -mb-4 mt-4 flex w-full cursor-pointer items-center justify-between gap-3 border-t border-line-soft px-4 py-3 text-sm md:-mx-5 md:-mb-5 md:px-5">
+              <span className="flex items-center gap-2 font-medium text-ink">
+                {adminMeta.visible_to_staff ? <Eye className="size-4 text-ok" aria-hidden /> : <EyeOff className="size-4 text-muted" aria-hidden />}
+                Visible to staff
+                <span className={cn("font-normal", adminMeta.visible_to_staff ? "text-ok" : "text-muted")}>{adminMeta.visible_to_staff ? "On" : "Off"}</span>
+              </span>
+              <Switch
+                label={`Visible to staff: ${tile.name}`}
+                checked={adminMeta.visible_to_staff}
               disabled={setVis.isPending}
               onCheckedChange={(v) =>
                 setVis.mutate({ key: tile.key, visible: v }, {

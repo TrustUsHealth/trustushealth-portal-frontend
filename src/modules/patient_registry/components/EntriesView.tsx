@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, ClipboardList, ClipboardPlus, FilterX, Search, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, ChevronRight, ClipboardList, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { StatusPill } from "@/components/ui/badge";
 import { Button, buttonStyles } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, Input, Select } from "@/components/ui/input";
 import { EmptyState, PageHeader, Pagination, Skeleton } from "@/components/ui/misc";
+import { BillTag } from "@/components/bill-tag";
 import type { EntryQuery, EntrySummary } from "@/core/api/types";
 import { useAppConfig } from "@/core/config/provider";
 import { usePartners } from "@/core/shell/tiles";
@@ -58,44 +59,56 @@ export function EntriesView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text]);
 
-  const advancedActive = ["referred_by", "bill_no", "lab_pid"].some((k) => sp.get(k));
+  const advancedActive = ["referred_by", "bill_no", "lab_pid", "date_from", "date_to"].some((k) => sp.get(k));
   const [more, setMore] = useState(advancedActive);
   const activeCount = FILTER_KEYS.filter((k) => sp.get(k)).length + (sp.get("q") ? 1 : 0);
 
   const { data, isLoading, isFetching, error } = useEntries(query);
+  const statusOptions = [
+    { value: "", label: "All" },
+    { value: "draft", label: "Drafts" },
+    { value: "complete", label: "Complete" },
+  ];
 
   return (
     <>
       <PageHeader
         title="Patient Registry"
         description="Every patient entry, one per lab visit. Search by name, lab patient ID or bill number."
-        actions={<Link href="/patient_registry/new" className={buttonStyles({ variant: "primary", size: "lg" })}><ClipboardPlus className="h-4 w-4" aria-hidden />New entry</Link>}
+        actions={<Link href="/patient_registry/new" className={buttonStyles({ variant: "primary", size: "lg" })}><Plus className="size-5" aria-hidden />New entry</Link>}
       />
       <RegistryNav />
 
-      <Card className="mb-4 p-3 md:p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" aria-hidden />
-            <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="Search name, patient ID or bill no." aria-label="Search entries" className="pl-9" />
+      <Card className="mb-5 p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative min-w-60 flex-1">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-muted" aria-hidden />
+            <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="Search name, patient ID or bill no." aria-label="Search entries" className="pl-11" />
           </div>
-          <div className="grid grid-cols-2 gap-2 md:flex">
-            <Select aria-label="Laboratory" value={query.partner_key} onChange={(e) => setParams({ partner_key: e.target.value })} className="md:w-48">
-              <option value="">All labs</option>
-              {partners?.map((p) => <option key={p.key} value={p.key}>{p.name}</option>)}
-            </Select>
-            <Select aria-label="Status" value={query.status} onChange={(e) => setParams({ status: e.target.value })} className="md:w-36">
-              <option value="">Any status</option>
-              <option value="draft">Draft</option>
-              <option value="complete">Complete</option>
-            </Select>
+          <Select aria-label="Laboratory" className="w-full sm:w-52" value={query.partner_key} onChange={(e) => setParams({ partner_key: e.target.value })}>
+            <option value="">All labs</option>
+            {partners?.map((p) => <option key={p.key} value={p.key}>{p.name}</option>)}
+          </Select>
+          <div role="group" aria-label="Status" className="inline-flex rounded-ctl border border-line bg-ivory p-1">
+            {statusOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setParams({ status: option.value })}
+                aria-pressed={query.status === option.value}
+                className={`h-9 rounded-md px-3.5 text-sm font-medium transition-colors ${query.status === option.value ? "bg-white text-ink-heading shadow-sm" : "text-ink-muted hover:text-ink-heading"}`}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
-          <Button variant={more ? "slate" : "secondary"} onClick={() => setMore((m) => !m)} aria-expanded={more}>
-            <SlidersHorizontal className="h-4 w-4" aria-hidden />Filters{activeCount > 0 && <span className="rounded-full bg-brand px-1.5 text-[11px] leading-5 text-white">{activeCount}</span>}
+          <Button variant="ghost" onClick={() => setMore((m) => !m)} aria-expanded={more}>
+            <SlidersHorizontal className="h-4 w-4" aria-hidden />More filters
+            <ChevronDown className={`h-4 w-4 transition-transform ${more ? "rotate-180" : ""}`} aria-hidden />
           </Button>
         </div>
         {more && (
-          <div className="mt-3 grid gap-3 border-t border-line/70 pt-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-4 grid gap-3 border-t border-line/70 pt-4 sm:grid-cols-2 lg:grid-cols-5">
             <Field label="From date" htmlFor="df"><Input id="df" type="date" value={query.date_from} onChange={(e) => setParams({ date_from: e.target.value })} /></Field>
             <Field label="To date" htmlFor="dt"><Input id="dt" type="date" value={query.date_to} onChange={(e) => setParams({ date_to: e.target.value })} /></Field>
             <Field label="Referred by" htmlFor="rb"><Input id="rb" defaultValue={query.referred_by} onBlur={(e) => setParams({ referred_by: e.target.value.trim() })} onKeyDown={(e) => e.key === "Enter" && setParams({ referred_by: (e.target as HTMLInputElement).value.trim() })} placeholder="Doctor name" /></Field>
@@ -104,7 +117,10 @@ export function EntriesView() {
           </div>
         )}
         {activeCount > 0 && (
-          <div className="mt-3"><Button size="sm" variant="ghost" onClick={() => router.replace("/patient_registry")}><FilterX className="h-4 w-4" aria-hidden />Clear all filters</Button></div>
+          <div className="mt-3 flex items-center justify-between gap-3 border-t border-line/70 pt-3">
+            <p className="text-sm text-ink-muted" aria-live="polite">{data ? `${data.total} ${data.total === 1 ? "entry" : "entries"} match` : "Searching…"}</p>
+            <Button size="sm" variant="ghost" onClick={() => router.replace("/patient_registry")}><X className="h-4 w-4" aria-hidden />Clear all filters</Button>
+          </div>
         )}
       </Card>
 
@@ -142,20 +158,16 @@ export function EntriesView() {
             {data.items.map((e) => (
               <li key={e.id}>
                 <Link href={`/patient_registry/${e.id}`} className="block rounded-card border border-line/80 bg-white p-4 shadow-card active:bg-ivory">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold text-ink-heading">{e.patient_name}</p>
-                      <p className="text-xs text-ink-muted">{[formatAge(e.age, e.age_unit), e.gender].filter((x) => x && x !== "—").join(" · ")}</p>
-                    </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <BillTag billNo={e.bill_no} />
                     <StatusPill status={e.status} />
                   </div>
-                  <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
-                    <div><dt className="text-ink-muted">Bill no.</dt><dd className="font-semibold tabular-nums text-ink-heading">{e.bill_no ?? "—"}</dd></div>
-                    <div><dt className="text-ink-muted">Registered</dt><dd className="font-semibold text-ink-heading">{formatDate(e.registration_date)}</dd></div>
-                    <div><dt className="text-ink-muted">Lab</dt><dd className="truncate font-semibold text-ink-heading">{labName(e.partner_key)}</dd></div>
-                    <div><dt className="text-ink-muted">Billed</dt><dd className="font-semibold text-ink-heading">{formatMoney(e.net_amount, currency)}</dd></div>
-                  </dl>
-                  {e.tests.length > 0 && <p className="mt-2 truncate text-xs text-ink-muted">{e.tests.join("; ")}</p>}
+                  <p className="mt-2 truncate font-semibold text-ink-heading">{e.patient_name}</p>
+                  <p className="text-sm text-ink-muted">{[formatAge(e.age, e.age_unit), e.gender, formatDate(e.registration_date)].filter((x) => x && x !== "—").join(" · ")}</p>
+                  <div className="mt-2 flex items-end justify-between gap-3 text-sm">
+                    <span className="min-w-0 flex-1 truncate text-ink-muted">{e.tests.join("; ") || "—"}</span>
+                    <span className="font-semibold tabular-nums text-ink-heading">{formatMoney(e.net_amount, currency)}</span>
+                  </div>
                 </Link>
               </li>
             ))}
@@ -168,19 +180,23 @@ export function EntriesView() {
 }
 
 function Row({ e, lab, currency, onOpen }: { e: EntrySummary; lab: string; currency: string; onOpen: () => void }) {
+  const tests = e.tests.length ? (
+    <span title={e.tests.join("; ")}>
+      <span className="line-clamp-1">{e.tests[0]}</span>
+      {e.tests.length > 1 && <span className="text-[13px] text-ink-muted"> +{e.tests.length - 1} more</span>}
+    </span>
+  ) : <span className="text-ink-muted">—</span>;
   return (
     <tr onClick={onOpen} className="cursor-pointer transition-colors hover:bg-ivory">
-      <td className="px-4 py-3 font-semibold tabular-nums text-ink-heading">{e.bill_no ?? "—"}</td>
+      <td className="px-4 py-3"><BillTag billNo={e.bill_no} /></td>
       <td className="px-4 py-3">
         <Link href={`/patient_registry/${e.id}`} onClick={(ev) => ev.stopPropagation()} className="font-semibold text-ink-heading hover:underline">{e.patient_name}</Link>
-        <p className="text-xs text-ink-muted">{[formatAge(e.age, e.age_unit), e.gender, e.lab_pid && `PID ${e.lab_pid}`].filter((x) => x && x !== "—").join(" · ")}</p>
+        <p className="text-xs text-ink-muted">{[formatAge(e.age, e.age_unit), e.gender].filter((x) => x && x !== "—").join(" · ")}</p>
       </td>
       <td className="px-4 py-3">{lab}</td>
       <td className="whitespace-nowrap px-4 py-3">{formatDate(e.registration_date)}</td>
       <td className="max-w-40 truncate px-4 py-3">{e.referred_by ?? "—"}</td>
-      <td className="max-w-56 px-4 py-3">
-        {e.tests.length ? <span title={e.tests.join("; ")} className="block truncate">{e.tests[0]}{e.tests.length > 1 && <span className="ml-1 rounded-full bg-slate-nav/10 px-1.5 py-0.5 text-[11px] font-semibold text-slate-nav">+{e.tests.length - 1}</span>}</span> : "—"}
-      </td>
+      <td className="max-w-56 px-4 py-3">{tests}</td>
       <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">{formatMoney(e.net_amount, currency)}</td>
       <td className="px-4 py-3"><StatusPill status={e.status} /></td>
       <td className="pr-3 text-ink-muted"><ChevronRight className="h-4 w-4" aria-hidden /></td>

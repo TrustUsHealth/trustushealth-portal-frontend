@@ -28,12 +28,10 @@ export function CustomersView() {
     <>
       <PageHeader title="Patients" description="One identity per person, with every visit linked underneath." />
       <RegistryNav />
-      <Card className="mb-4 p-3 md:p-4">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" aria-hidden />
-          <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="Search by patient name" aria-label="Search patients" className="pl-9" />
-        </div>
-      </Card>
+      <div className="relative mb-5 max-w-md">
+        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-muted" aria-hidden />
+        <Input type="search" value={text} onChange={(e) => setText(e.target.value)} placeholder="Search by patient name" aria-label="Search patients" className="pl-11" />
+      </div>
       {error ? <Alert kind="error" title="Could not load patients">{(error as Error).message}</Alert>
         : isLoading ? <Card className="space-y-3 p-4">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-14" />)}</Card>
         : !data?.items.length ? <Card><EmptyState icon={UserRound} title={q ? "No patient matches that name" : "No patients yet"}>Patients appear here automatically when you save an entry.</EmptyState></Card>
@@ -41,12 +39,14 @@ export function CustomersView() {
           <>
             <Card className="divide-y divide-line/70 overflow-hidden">
               {data.items.map((c) => (
-                <Link key={c.id} href={`/patient_registry/customers/${c.id}`} className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-ivory">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-slate-nav/10 font-display font-semibold text-slate-nav">{c.name[0]}</span>
-                  <div className="min-w-0 flex-1">
+                <Link key={c.id} href={`/patient_registry/customers/${c.id}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-4 transition-colors hover:bg-ivory">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-slate-nav/10 font-display font-semibold text-slate-nav" aria-hidden>{c.name[0]}</span>
+                  <div className="min-w-0 flex-1 basis-48">
                     <p className="truncate font-semibold text-ink-heading">{c.name}</p>
-                    <p className="truncate text-xs text-ink-muted">{[formatAge(c.age, c.age_unit), c.gender, c.phone].filter((x) => x && x !== "—").join(" · ") || "No other details"}</p>
+                    <p className="truncate text-sm text-ink-muted">{[formatAge(c.age, c.age_unit), c.gender].filter((x) => x && x !== "—").join(" · ") || "No other details"}</p>
                   </div>
+                  <p className="text-sm text-ink-muted">{c.phone ?? "No phone"}</p>
+                  <p className="text-sm text-ink-muted">Since {formatDate(c.created_at)}</p>
                   <ChevronRight className="h-4 w-4 text-ink-muted" aria-hidden />
                 </Link>
               ))}

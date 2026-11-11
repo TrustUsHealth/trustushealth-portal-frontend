@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ClipboardPlus, FileSpreadsheet, FilePenLine, Inbox, LayoutGrid, Sigma, Sun } from "lucide-react";
+import { ArrowRight, Inbox, LayoutGrid, Plus, Sun } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
-import { RolePill } from "@/components/ui/badge";
+import { Pill, RolePill } from "@/components/ui/badge";
 import { buttonStyles } from "@/components/ui/button";
 import { EmptyState, Skeleton } from "@/components/ui/misc";
 import { useAuth } from "@/core/auth/session";
@@ -16,21 +16,6 @@ import { TileCard } from "./TileCard";
 function greeting() {
   const h = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: "Asia/Kolkata" }).format(new Date()));
   return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-}
-
-function Stat({ icon: Icon, label, value, href, tone }: { icon: typeof Sun; label: string; value?: number; href?: string; tone?: "warn" }) {
-  const body = (
-    <div className="flex items-center gap-3 rounded-card border border-line/80 bg-white p-4 shadow-card transition-colors hover:border-slate-nav/50">
-      <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-xl", tone === "warn" && (value ?? 0) > 0 ? "bg-warn-soft text-warn" : "bg-slate-nav/10 text-slate-nav")}>
-        <Icon className="h-5 w-5" aria-hidden />
-      </span>
-      <div>
-        {value === undefined ? <Skeleton className="h-7 w-10" /> : <p className="font-display text-2xl font-semibold tabular-nums leading-none text-ink-heading">{value}</p>}
-        <p className="mt-1 text-[13px] text-ink-muted">{label}</p>
-      </div>
-    </div>
-  );
-  return href ? <Link href={href}>{body}</Link> : body;
 }
 
 export function DashboardView() {
@@ -53,7 +38,7 @@ export function DashboardView() {
         </div>
         {registryOpen && (
           <div className="flex flex-wrap gap-2">
-            <Link href="/patient_registry/new" className={buttonStyles({ variant: "primary", size: "lg" })}><ClipboardPlus className="h-4 w-4" aria-hidden />New patient entry</Link>
+            <Link href="/patient_registry/new" className={cn(buttonStyles({ variant: "primary", size: "lg" }), "gap-2 px-4 text-base")}><Plus className="size-5" aria-hidden />New patient entry</Link>
           </div>
         )}
       </header>
@@ -66,10 +51,31 @@ export function DashboardView() {
       )}
 
       {registryOpen && (
-        <section aria-label="Patient registry at a glance" className="mb-8 grid gap-3 sm:grid-cols-3">
-          <Stat icon={FileSpreadsheet} label="Entries registered today" value={stats.data?.today} href="/patient_registry" />
-          <Stat icon={FilePenLine} label="Drafts waiting for amounts" value={stats.data?.drafts} href="/patient_registry?status=draft" tone="warn" />
-          <Stat icon={Sigma} label="Entries in total" value={stats.data?.total} href="/patient_registry" />
+        <section aria-label="Patient registry at a glance" className="mb-8 grid divide-y divide-line/70 overflow-hidden rounded-card border border-line/80 bg-white shadow-card sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <Link href="/patient_registry" className="group flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-ivory">
+            <div>
+              <p className="text-sm font-medium text-ink-muted">Entries registered today</p>
+              <p className="mt-0.5 font-display text-3xl font-semibold tabular-nums leading-tight text-ink-heading">{stats.isLoading ? <Skeleton className="mt-1 h-8 w-12" /> : (stats.data?.today ?? "—")}</p>
+              <p className="text-[13px] text-ink-muted">Registered today</p>
+            </div>
+            <ArrowRight className="size-5 shrink-0 text-ink-muted transition-transform group-hover:translate-x-0.5" aria-hidden />
+          </Link>
+          <Link href="/patient_registry?status=draft" className="group flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-ivory">
+            <div>
+              <p className="text-sm font-medium text-ink-muted">Drafts waiting for amounts</p>
+              <p className="mt-0.5 font-display text-3xl font-semibold tabular-nums leading-tight text-ink-heading">{stats.isLoading ? <Skeleton className="mt-1 h-8 w-12" /> : (stats.data?.drafts ?? "—")}</p>
+              <p className="text-[13px] text-ink-muted">Entries to finish</p>
+            </div>
+            {(stats.data?.drafts ?? 0) > 0 ? <Pill className="border-warn/30 bg-warn-soft text-warn">Needs a look</Pill> : <ArrowRight className="size-5 shrink-0 text-ink-muted transition-transform group-hover:translate-x-0.5" aria-hidden />}
+          </Link>
+          <Link href="/patient_registry" className="group flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-ivory">
+            <div>
+              <p className="text-sm font-medium text-ink-muted">Entries in total</p>
+              <p className="mt-0.5 font-display text-3xl font-semibold tabular-nums leading-tight text-ink-heading">{stats.isLoading ? <Skeleton className="mt-1 h-8 w-12" /> : (stats.data?.total ?? "—")}</p>
+              <p className="text-[13px] text-ink-muted">All registered entries</p>
+            </div>
+            <ArrowRight className="size-5 shrink-0 text-ink-muted transition-transform group-hover:translate-x-0.5" aria-hidden />
+          </Link>
         </section>
       )}
 

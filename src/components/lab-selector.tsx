@@ -36,20 +36,19 @@ export function LabSelector({ module, value, onChange }: { module: string; value
             aria-checked={on}
             onClick={() => onChange(lab.key)}
             className={cn(
-              "group relative flex min-h-28 flex-col justify-between overflow-hidden rounded-card border bg-white p-4 text-left shadow-card transition-all",
+              "group relative flex min-h-32 flex-col justify-between overflow-hidden rounded-card border bg-white p-5 text-left shadow-card transition-all",
               on ? "border-slate-nav ring-2 ring-slate-nav" : "border-line hover:-translate-y-0.5 hover:border-slate-nav/50",
             )}
           >
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-slate-nav/10 text-slate-nav"><FlaskConical className="h-5 w-5" aria-hidden /></span>
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-slate-nav/10 text-slate-nav"><FlaskConical className="size-5" aria-hidden /></span>
             <span>
-              <span className="block font-display text-[17px] font-semibold text-ink-heading">{lab.name}</span>
-              <span className="text-xs text-ink-muted">{lab.key.replace(/_/g, " ")}</span>
+              <span className="block font-display text-lg font-semibold text-ink-heading">{lab.name}</span>
+              <span className="text-[13px] text-ink-muted">{lab.key.replace(/_/g, " ")}</span>
             </span>
-            {on && <span className="absolute right-3 top-3 grid h-6 w-6 place-items-center rounded-full bg-slate-nav text-white"><Check className="h-3.5 w-3.5" aria-label="Selected" /></span>}
+            {on && <span className="absolute right-3 top-3 grid size-7 place-items-center rounded-full bg-slate-nav text-white"><Check className="size-4" aria-label="Selected" /></span>}
           </button>
         );
       })}
     </div>
   );
 }
-

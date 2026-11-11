@@ -30,13 +30,14 @@ export interface EntryFormProps {
   disabled?: boolean;
   footerNote?: React.ReactNode;
   autoFocusName?: boolean;
+  comfortable?: boolean;
 }
 
 const INPUT_TYPE: Record<string, string> = { date: "date", datetime: "datetime-local" };
 const INPUT_MODE: Record<string, "numeric" | "decimal" | "tel" | "email" | undefined> = { number: "numeric", money: "decimal" };
 
 export function EntryForm({
-  fields, defaults, verify = [], fromReport = [], isAdmin, submitLabel, busy, onSubmit, onCancel, requireDirty, disabled, footerNote, autoFocusName,
+  fields, defaults, verify = [], fromReport = [], isAdmin, submitLabel, busy, onSubmit, onCancel, requireDirty, disabled, footerNote, autoFocusName, comfortable,
 }: EntryFormProps) {
   const { currency } = useAppConfig();
   const schema = useMemo(() => buildSchema(fields), [fields]);
@@ -122,11 +123,11 @@ export function EntryForm({
   const span = (k: string) => (k === "tests" || k === "patient_name" || k === "email" ? "sm:col-span-2" : "");
 
   return (
-    <form onSubmit={handleSubmit((v) => onSubmit(v, dirtyKeys))} noValidate className="space-y-7">
+    <form onSubmit={handleSubmit((v) => onSubmit(v, dirtyKeys))} noValidate className={cn("space-y-7", comfortable && "space-y-8 [&_input]:h-11 [&_input]:text-base [&_label]:text-sm [&_select]:h-11 [&_select]:text-base")}>
       {groups.map((g) => (
         <fieldset key={g.id} disabled={disabled} className="min-w-0">
-          <legend className="mb-3 font-display text-[15px] font-semibold text-ink-heading">{g.title}</legend>
-          <div className="grid gap-x-4 gap-y-4 sm:grid-cols-2">
+          <legend className={cn("mb-3 font-display text-[15px] font-semibold text-ink-heading", comfortable && "mb-4 text-base")}>{g.title}</legend>
+          <div className={cn("grid gap-x-4 gap-y-4 sm:grid-cols-2", comfortable && "gap-x-5 gap-y-5")}>
             {g.keys.map((k) => {
               const f = byKey.get(k)!;
               return (
@@ -139,17 +140,17 @@ export function EntryForm({
           </div>
 
           {g.id === "billing" && (
-            <div className="mt-4 grid gap-3 rounded-card border border-line bg-ivory p-4 sm:grid-cols-2">
+            <div className={cn("mt-4 grid gap-3 rounded-card border border-line bg-ivory p-4 sm:grid-cols-2", comfortable && "p-5")}>
               <div>
-                <p className="text-xs font-semibold text-ink-muted">Billed amount (gross − discount)</p>
-                <p className="mt-0.5 font-display text-2xl font-semibold tabular-nums text-ink-heading">{formatMoney(amounts.net, currency)}</p>
-                <p className="mt-1 text-xs text-ink-muted">An entry becomes <b>complete</b> and joins the Excel register once this is set.</p>
+                <p className={cn("text-xs font-semibold text-ink-muted", comfortable && "text-sm")}>Billed amount (gross − discount)</p>
+                <p className={cn("mt-0.5 font-display text-2xl font-semibold tabular-nums text-ink-heading", comfortable && "text-3xl")}>{formatMoney(amounts.net, currency)}</p>
+                <p className={cn("mt-1 text-xs text-ink-muted", comfortable && "text-sm")}>An entry becomes <b>complete</b> and joins the Excel register once this is set.</p>
               </div>
               {isAdmin && (
                 <div>
-                  <p className="flex items-center gap-1 text-xs font-semibold text-ink-muted"><Lock className="h-3 w-3" aria-hidden />Margin (admin only)</p>
-                  <p className="mt-0.5 font-display text-2xl font-semibold tabular-nums text-ink-heading">{formatMoney(amounts.margin, currency)}</p>
-                  <p className="mt-1 text-xs text-ink-muted">Billed amount − lab cost.</p>
+                  <p className={cn("flex items-center gap-1 text-xs font-semibold text-ink-muted", comfortable && "text-sm")}><Lock className="h-3 w-3" aria-hidden />Margin (admin only)</p>
+                  <p className={cn("mt-0.5 font-display text-2xl font-semibold tabular-nums text-ink-heading", comfortable && "text-3xl")}>{formatMoney(amounts.margin, currency)}</p>
+                  <p className={cn("mt-1 text-xs text-ink-muted", comfortable && "text-sm")}>Billed amount − lab cost.</p>
                 </div>
               )}
             </div>
@@ -157,11 +158,11 @@ export function EntryForm({
         </fieldset>
       ))}
 
-      <div className="sticky bottom-0 -mx-4 flex flex-col gap-3 border-t border-line bg-ivory/95 px-4 py-3 backdrop-blur sm:flex-row sm:items-center sm:justify-between md:-mx-0 md:rounded-b-card md:px-0">
-        <div className="text-xs text-ink-muted">{footerNote}</div>
+      <div className={cn("sticky bottom-0 -mx-4 flex flex-col gap-3 border-t border-line bg-ivory/95 px-4 py-3 backdrop-blur sm:flex-row sm:items-center sm:justify-between md:-mx-0 md:rounded-b-card md:px-0", comfortable && "py-4")}>
+        <div className={cn("text-xs text-ink-muted", comfortable && "text-sm")}>{footerNote}</div>
         <div className="flex gap-2">
-          {onCancel && <Button onClick={onCancel} disabled={busy}>Cancel</Button>}
-          <Button type="submit" variant="primary" loading={busy} disabled={disabled || (requireDirty && !isDirty)} className="flex-1 sm:flex-none">{submitLabel}</Button>
+          {onCancel && <Button onClick={onCancel} disabled={busy} className={comfortable ? "md:h-11 md:text-[15px]" : undefined}>Cancel</Button>}
+          <Button type="submit" variant="primary" loading={busy} disabled={disabled || (requireDirty && !isDirty)} className={cn("flex-1 sm:flex-none", comfortable && "md:h-11 md:text-[15px]")}>{submitLabel}</Button>
         </div>
       </div>
     </form>
