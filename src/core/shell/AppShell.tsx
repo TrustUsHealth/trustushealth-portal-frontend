@@ -92,7 +92,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button className="grid h-11 w-11 place-items-center rounded-ctl text-ink-heading hover:bg-slate-nav/10" onClick={() => setDrawer(true)} aria-label="Open menu">
                 <Menu className="h-5 w-5" aria-hidden />
               </button>
-              <Logo variant="full" className="absolute left-1/2 h-9 -translate-x-1/2" />
+              <Logo variant="full" className="absolute left-1/2 h-14 -translate-x-1/2" />
             </div>
             {children}
           </div>

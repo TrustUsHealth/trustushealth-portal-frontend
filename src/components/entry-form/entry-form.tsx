@@ -31,13 +31,14 @@ export interface EntryFormProps {
   footerNote?: React.ReactNode;
   autoFocusName?: boolean;
   comfortable?: boolean;
+  groupCards?: boolean;
 }
 
 const INPUT_TYPE: Record<string, string> = { date: "date", datetime: "datetime-local" };
 const INPUT_MODE: Record<string, "numeric" | "decimal" | "tel" | "email" | undefined> = { number: "numeric", money: "decimal" };
 
 export function EntryForm({
-  fields, defaults, verify = [], fromReport = [], isAdmin, submitLabel, busy, onSubmit, onCancel, requireDirty, disabled, footerNote, autoFocusName, comfortable,
+  fields, defaults, verify = [], fromReport = [], isAdmin, submitLabel, busy, onSubmit, onCancel, requireDirty, disabled, footerNote, autoFocusName, comfortable, groupCards,
 }: EntryFormProps) {
   const { currency } = useAppConfig();
   const schema = useMemo(() => buildSchema(fields), [fields]);
@@ -56,7 +57,12 @@ export function EntryForm({
   const byKey = useMemo(() => new Map(editableFields(fields).map((f) => [f.key, f])), [fields]);
   const listed = new Set(GROUPS.flatMap((g) => g.keys));
   const extras = [...byKey.keys()].filter((k) => !listed.has(k));
-  const groups = [...GROUPS, ...(extras.length ? [{ id: "more", title: "More details", keys: extras }] : [])]
+  const formGroups = groupCards
+    ? GROUPS.filter((g) => g.id !== "tests").map((g) => g.id === "visit"
+      ? { ...g, keys: [...g.keys, ...GROUPS.find((item) => item.id === "tests")!.keys] }
+      : g)
+    : GROUPS;
+  const groups = [...formGroups, ...(extras.length ? [{ id: "more", title: "More details", keys: extras }] : [])]
     .map((g) => ({ ...g, keys: g.keys.filter((k) => byKey.has(k)) }))
     .filter((g) => g.keys.length);
 
@@ -125,8 +131,8 @@ export function EntryForm({
   return (
     <form onSubmit={handleSubmit((v) => onSubmit(v, dirtyKeys))} noValidate className={cn("space-y-7", comfortable && "space-y-8 [&_input]:h-11 [&_input]:text-base [&_label]:text-sm [&_select]:h-11 [&_select]:text-base")}>
       {groups.map((g) => (
-        <fieldset key={g.id} disabled={disabled} className="min-w-0">
-          <legend className={cn("mb-3 font-display text-[15px] font-semibold text-ink-heading", comfortable && "mb-4 text-base")}>{g.title}</legend>
+        <fieldset key={g.id} disabled={disabled} className={cn("min-w-0", groupCards && "rounded-card border border-line/80 bg-white p-4 shadow-card sm:p-5")}>
+          <legend className={cn("mb-3 font-display text-[15px] font-semibold text-ink-heading", comfortable && "mb-4 text-base", groupCards && "px-1 text-base")}>{g.title}</legend>
           <div className={cn("grid gap-x-4 gap-y-4 sm:grid-cols-2", comfortable && "gap-x-5 gap-y-5")}>
             {g.keys.map((k) => {
               const f = byKey.get(k)!;

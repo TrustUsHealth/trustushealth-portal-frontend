@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Download, FileText, RefreshCw, Trash2, UserRound } from "lucide-react";
+import { ArrowLeft, Download, FileText, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert } from "@/components/ui/alert";
 import { StatusPill } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/misc";
 import { EntryForm } from "@/components/entry-form/entry-form";
 import { toFormValues, toPatchPayload, type FormValues } from "@/components/entry-form/entry-fields";
+import { BillTag } from "@/components/bill-tag";
 import { PdfPreview } from "@/components/pdf-preview";
 import { ApiError, downloadFile, errorMessage } from "@/core/api/client";
 import { useAuth } from "@/core/auth/session";
@@ -65,34 +66,59 @@ export function EntryDetailView({ id }: { id: string }) {
 
   return (
     <>
-      <div className="mb-4"><Link href="/patient_registry" className={buttonStyles({ variant: "ghost", size: "sm" })}><ArrowLeft className="h-4 w-4" aria-hidden />All entries</Link></div>
-      <RegistryNav />
+      <div className="mb-3 md:mb-4">
+        <Link href="/patient_registry" className={buttonStyles({ variant: "ghost", size: "sm" })}>
+          <ArrowLeft className="h-4 w-4" aria-hidden />All entries
+        </Link>
+      </div>
 
-      <Card className="mb-6 overflow-hidden">
-        <div className="grid gap-px bg-line/70 md:grid-cols-[1.2fr_1fr_1fr]">
-          <div className="bg-white p-5">
-            <p className="text-xs font-semibold text-ink-muted">Bill no.</p>
-            <p className="font-display text-4xl font-semibold tabular-nums tracking-tight text-ink-heading">{entry.bill_no ?? "—"}</p>
-            <div className="mt-3 flex flex-wrap items-center gap-2"><StatusPill status={entry.status} /><span className="text-sm text-ink-muted">{labName}</span></div>
+      <Card className="mb-5 overflow-hidden md:mb-7">
+        <CardBody className="p-4 sm:p-6 md:p-7">
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:gap-6">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+                <BillTag billNo={entry.bill_no} size="large" className="shrink-0" />
+                <h1 className="min-w-0 break-words font-display text-2xl font-semibold tracking-tight text-ink-heading sm:text-[28px]">{entry.patient_name}</h1>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-muted">
+                <p><span className="font-semibold text-ink-heading">Lab</span><span className="mx-2 text-line" aria-hidden>·</span>{labName}</p>
+                <p><span className="font-semibold text-ink-heading">Registered</span><span className="mx-2 text-line" aria-hidden>·</span>{formatDate(entry.registration_date)}</p>
+                <p><span className="font-semibold text-ink-heading">Referred by</span><span className="mx-2 text-line" aria-hidden>·</span>{entry.referred_by || "—"}</p>
+              </div>
+            </div>
+            <div className="flex min-w-0 flex-col gap-4 md:items-end">
+              <div className="flex items-center gap-2 md:justify-end">
+                <StatusPill status={entry.status} />
+                {isAdmin && <Button size="sm" variant="danger" onClick={() => setConfirmDelete(true)}><Trash2 className="h-4 w-4" aria-hidden />Delete</Button>}
+              </div>
+              <div className="hidden text-left md:block md:text-right">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Billed amount</p>
+                <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-ink-heading">{formatMoney(entry.net_amount, currency)}</p>
+                {isAdmin && entry.margin != null && <p className="mt-1 text-sm tabular-nums text-ink-muted">Margin {formatMoney(entry.margin, currency)}</p>}
+              </div>
+            </div>
           </div>
-          <div className="bg-white p-5">
-            <p className="text-xs font-semibold text-ink-muted">Patient</p>
-            <p className="mt-0.5 truncate text-lg font-semibold text-ink-heading">{entry.patient_name}</p>
-            <p className="text-sm text-ink-muted">Registered {formatDate(entry.registration_date)}</p>
-            {entry.customer_id && (
-              <Link href={`/patient_registry/customers/${entry.customer_id}`} className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-nav hover:underline"><UserRound className="h-4 w-4" aria-hidden />Visit history</Link>
+
+          <div className="mt-5 grid gap-4 border-t border-line/70 pt-4 md:hidden sm:mt-6 sm:grid-cols-2 sm:gap-6 sm:pt-5">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Billed amount</p>
+              <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-ink-heading sm:text-[28px]">{formatMoney(entry.net_amount, currency)}</p>
+            </div>
+            {isAdmin && entry.margin != null && (
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Margin</p>
+                <p className="mt-1 font-display text-xl font-semibold tabular-nums text-ink-heading">{formatMoney(entry.margin, currency)}</p>
+              </div>
             )}
           </div>
-          <div className="bg-white p-5">
-            <p className="text-xs font-semibold text-ink-muted">Billed amount</p>
-            <p className="font-display text-3xl font-semibold tabular-nums text-ink-heading">{formatMoney(entry.net_amount, currency)}</p>
-            <p className="text-sm text-ink-muted">
-              {entry.gross_amount != null ? `${formatMoney(entry.gross_amount, currency)} − ${formatMoney(entry.discount_amount ?? 0, currency)} discount` : "Add amounts to complete"}
-              {isAdmin && entry.margin != null && <span className="block">Margin {formatMoney(entry.margin, currency)}</span>}
-            </p>
-          </div>
-        </div>
+
+          <p className="mt-4 border-t border-line/70 pt-3 text-xs text-ink-muted">
+            Version {entry.version}<span className="mx-2 text-line" aria-hidden>·</span>Last updated {formatDateTime(entry.updated_at)}
+          </p>
+        </CardBody>
       </Card>
+
+      <RegistryNav />
 
       {stale && (
         <Alert kind="warning" title="Someone else changed this entry" className="mb-4"
@@ -103,11 +129,10 @@ export function EntryDetailView({ id }: { id: string }) {
 
       <div className={cn("grid gap-6", entry.reports.length && "xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]")}>
         <Card className="min-w-0">
-          <CardHeader title="Entry details" description={`Version ${entry.version} · updated ${formatDateTime(entry.updated_at)}`}
-            action={isAdmin ? <Button size="sm" variant="danger" onClick={() => setConfirmDelete(true)}><Trash2 className="h-4 w-4" aria-hidden />Delete</Button> : undefined} />
+          <CardHeader title="Entry details" />
           <CardBody>
             {fields ? (
-              <EntryForm fields={fields} defaults={defaults} isAdmin={isAdmin} busy={patch.isPending} requireDirty submitLabel="Save changes"
+              <EntryForm fields={fields} defaults={defaults} isAdmin={isAdmin} busy={patch.isPending} requireDirty submitLabel="Save changes" groupCards comfortable
                 onSubmit={save}
                 footerNote="Edits update this same record, its Excel row and keep the bill number." />
             ) : <Skeleton className="h-72" />}

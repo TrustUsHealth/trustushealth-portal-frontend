@@ -86,7 +86,7 @@ export function LoginView() {
       <aside className="relative hidden overflow-hidden bg-slate-nav p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div aria-hidden className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand opacity-80 mix-blend-multiply" />
         <div aria-hidden className="absolute -bottom-32 -left-16 h-80 w-80 rounded-full border-[40px] border-white/5" />
-        <div className="relative w-fit rounded-card bg-white px-5 py-3"><Logo variant="full" className="h-11" /></div>
+        <div className="relative w-fit rounded-card px-8 py-2"><Logo variant="full" className="h-32 w-auto" /></div>
         <div className="relative max-w-md">
           <h1 className="font-display text-[44px] font-semibold leading-[1.05] !text-white">
             From sample pickup to patient inbox, in one calm place.
@@ -105,7 +105,7 @@ export function LoginView() {
 
       <main className="paper flex items-center justify-center px-5 py-10">
         <div className="w-full max-w-sm">
-          <div className="mb-8 lg:hidden"><Logo variant="full" className="h-11" /></div>
+          <div className="mb-8 flex items-center justify-center lg:hidden"><Logo variant="full" className="h-24" /></div>
 
           {step === "email" ? (
             <form onSubmit={sendCode} noValidate className="animate-pop-in">
