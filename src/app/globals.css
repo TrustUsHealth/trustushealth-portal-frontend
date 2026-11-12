@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root { color-scheme: light; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-ivory font-sans text-ink antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  h1, h2, h3, h4 { @apply font-display text-ink-heading; letter-spacing: -0.012em; }
+  :focus-visible { @apply outline-none ring-2 ring-slate-nav ring-offset-2 ring-offset-ivory; }
+  ::selection { background: #FFD0D1; color: #292C2D; }
+  input[type="date"], input[type="datetime-local"] { min-height: 2.75rem; }
+  @media (min-width: 768px) { input[type="date"], input[type="datetime-local"] { min-height: 2.5rem; } }
+}
+
+@layer components {
+  .skeleton { @apply relative overflow-hidden rounded-ctl bg-line/50; }
+  .skeleton::after {
+    content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.65), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+  .scroll-x { @apply overflow-x-auto overscroll-x-contain; }
+  /* Subtle paper grain behind the portal chrome: pure CSS, no image asset. */
+  .paper {
+    background-image: radial-gradient(rgba(52,73,94,.055) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
