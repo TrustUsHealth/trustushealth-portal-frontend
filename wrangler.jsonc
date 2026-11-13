@@ -5,5 +5,5 @@
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
-  "vars": { "BACKEND_URL": "https://REPLACE-WITH-YOUR-RENDER-SERVICE.onrender.com" }
+  "vars": { "BACKEND_URL": "https://trustushealth-portal-backend.onrender.com" }
 }

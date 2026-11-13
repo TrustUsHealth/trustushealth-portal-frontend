@@ -1,5 +1,5 @@
 import {
-  BarChart3, ClipboardList, FileText, LayoutDashboard, LogIn, Receipt, ScrollText, Send, ShieldCheck, Boxes,
+  BarChart3, ClipboardList, FileText, LayoutDashboard, LogIn, Receipt, ScrollText, Send, ShieldCheck, Boxes, TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
@@ -11,6 +11,7 @@ const MAP: Record<string, LucideIcon> = {
   send: Send,
   "scroll-text": ScrollText,
   "bar-chart-3": BarChart3,
+  "trending-up": TrendingUp,
   "shield-check": ShieldCheck,
   "log-in": LogIn,
   dashboard: LayoutDashboard,

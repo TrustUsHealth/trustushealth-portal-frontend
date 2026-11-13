@@ -12,6 +12,7 @@ export interface ModuleMeta {
 export const MODULE_REGISTRY: Record<string, ModuleMeta> = {
   access: { description: "Invite people, decide what staff can see, approve access requests.", status: "live" },
   patient_registry: { description: "Patient entries, report upload, duplicate checks and the yearly Excel register.", status: "live" },
+  insights: { description: "Money, labs and patients at a glance, with a downloadable PDF report. Admin only.", status: "live" },
   bill_generator: {
     description: "Plain PDF bills for Spectrum from an entry, a report or scratch.",
     status: "planned",
