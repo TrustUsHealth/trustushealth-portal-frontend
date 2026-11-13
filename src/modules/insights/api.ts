@@ -60,3 +60,14 @@ export function useDownloadReport() {
       downloadFile("/insights/report.pdf", { ...filters.apiQuery, sections: sections.join(",") }, "TrustUs_Business_Report.pdf"),
   });
 }
+
+/** POST /insights/report.email sends the same filtered PDF to the signed-in admin. */
+export function useEmailReport() {
+  return useMutation({
+    mutationFn: ({ filters, sections }: { filters: InsightsFilters; sections: string[] }) =>
+      api<{ status: "sent" }>("/insights/report.email", {
+        method: "POST",
+        query: { ...filters.apiQuery, sections: sections.join(",") },
+      }),
+  });
+}
