@@ -14,10 +14,8 @@ export const MODULE_REGISTRY: Record<string, ModuleMeta> = {
   patient_registry: { description: "Patient entries, report upload, duplicate checks and the yearly Excel register.", status: "live" },
   insights: { description: "Money, labs and patients at a glance, with a downloadable PDF report. Admin only.", status: "live" },
   bill_generator: {
-    description: "Plain PDF bills for Spectrum from an entry, a report or scratch.",
-    status: "planned",
-    build: 2,
-    planned: ["Pick an existing entry and only type amounts", "Upload a Spectrum report to pre-fill", "Download, print or send the bill"],
+    description: "Plain PDF bills for Spectrum from an entry, a report or scratch, and Metropolis bills edited in place.",
+    status: "live",
   },
   reports: {
     description: "Every lab report in one searchable library, with Gmail intake.",

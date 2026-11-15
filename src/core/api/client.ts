@@ -192,6 +192,25 @@ export async function fetchBlob(path: string, query?: Query, fallbackName = "fil
   return { blob: await res.blob(), filename: filenameFrom(res, fallbackName), type: res.headers.get("Content-Type") ?? "" };
 }
 
+/** Like `fetchBlob` but for requests with a body (POST renders that answer with a PDF). Errors stay `ApiError`s. */
+export async function requestBlob(path: string, o: RequestOpts, fallbackName = "file") {
+  const res = await raw(path, o);
+  if (!res.ok) throw await toError(res);
+  return { blob: await res.blob(), filename: filenameFrom(res, fallbackName), type: res.headers.get("Content-Type") ?? "" };
+}
+
+/** Hands an in-memory blob to the browser as a download. */
+export function saveBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
 export async function downloadFile(path: string, query?: Query, fallbackName = "download") {
   const { blob, filename } = await fetchBlob(path, query, fallbackName);
   const url = URL.createObjectURL(blob);
