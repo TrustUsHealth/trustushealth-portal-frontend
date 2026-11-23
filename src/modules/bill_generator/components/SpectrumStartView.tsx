@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowLeft, Loader2, PencilLine, Search, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
-import { Alert } from "@/components/ui/alert";
-import { Button, buttonStyles } from "@/components/ui/button";
+import { buttonStyles } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/misc";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,11 +24,9 @@ function Body({ labName }: { labName: string }) {
   const [parsed, setParsed] = useState<ParsedOut | null>(null);
   const [fileName, setFileName] = useState<string | undefined>();
   const [parsing, setParsing] = useState<string | null>(null);
-  const [parseError, setParseError] = useState<string | null>(null);
 
   async function onFile(file: File) {
     setParsing(file.name);
-    setParseError(null);
     try {
       const out = await parseSpectrum(file);
       setParsed(out);
@@ -37,7 +34,13 @@ function Body({ labName }: { labName: string }) {
       setStage("form");
       toast.success("Report read. Check the details and add the amounts.");
     } catch (e) {
-      setParseError(errorMessage(e));
+      toast.error("Could not read that report", {
+        description: errorMessage(e),
+        action: {
+          label: "Type it in instead",
+          onClick: () => { setParsed(null); setStage("form"); },
+        },
+      });
     } finally {
       setParsing(null);
     }
@@ -69,11 +72,6 @@ function Body({ labName }: { labName: string }) {
             <div>
               <h3 className="mb-3 flex items-center gap-2 text-base font-semibold"><UploadCloud className="size-5 text-ink-muted" aria-hidden />Upload the {labName} report</h3>
               <PdfUploadZone allowed={cfg.upload_allowed} onFile={onFile} title="Upload the lab report" hint="The patient details are read from it so you only add the amounts." />
-              {parseError && (
-                <Alert kind="error" title="Could not read that report" className="mt-3" action={<Button size="sm" onClick={() => { setParsed(null); setStage("form"); }}>Type it in instead</Button>}>
-                  {parseError}
-                </Alert>
-              )}
             </div>
             <div>
               <h3 className="mb-3 flex items-center gap-2 text-base font-semibold"><PencilLine className="size-5 text-ink-muted" aria-hidden />No report?</h3>

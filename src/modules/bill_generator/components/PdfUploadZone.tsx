@@ -2,10 +2,10 @@
 
 import { useRef, useState } from "react";
 import { FileUp, UploadCloud } from "lucide-react";
-import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAppConfig } from "@/core/config/provider";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 /** Drag-and-drop / picker with the same client-side checks as the registry upload (type and size from /config/app). */
 export function PdfUploadZone({
@@ -14,16 +14,24 @@ export function PdfUploadZone({
   const cfg = useAppConfig();
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
   const accept = allowed.map((e) => `.${e}`).join(",");
   const label = allowed.map((e) => e.toUpperCase()).join(" or ");
 
   function take(f?: File) {
     if (!f) return;
     const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
-    if (!allowed.includes(ext)) return setErr(`Only ${label} files can be used here. This one is .${ext || "unknown"}.`);
-    if (f.size > cfg.upload_max_mb * 1024 * 1024) return setErr(`This file is ${(f.size / 1048576).toFixed(1)} MB. The limit is ${cfg.upload_max_mb} MB.`);
-    setErr(null);
+    if (!allowed.includes(ext)) {
+      toast.error("That file cannot be used", {
+        description: `Only ${label} files can be used here. This one is .${ext || "unknown"}.`,
+      });
+      return;
+    }
+    if (f.size > cfg.upload_max_mb * 1024 * 1024) {
+      toast.error("That file cannot be used", {
+        description: `This file is ${(f.size / 1048576).toFixed(1)} MB. The limit is ${cfg.upload_max_mb} MB.`,
+      });
+      return;
+    }
     onFile(f);
   }
 
@@ -41,7 +49,6 @@ export function PdfUploadZone({
         <Button variant="primary" size="lg" className="mt-5" disabled={disabled} onClick={() => input.current?.click()}><FileUp className="size-5" aria-hidden />Choose file</Button>
         <input ref={input} type="file" accept={accept} className="sr-only" tabIndex={-1} onChange={(e) => { take(e.target.files?.[0]); e.target.value = ""; }} />
       </div>
-      {err && <Alert kind="error" title="That file cannot be used" className="mt-3">{err}</Alert>}
     </div>
   );
 }

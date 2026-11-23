@@ -66,15 +66,23 @@ function UploadZone({ onFile, disabled }: { onFile: (f: File) => void; disabled?
   const cfg = useAppConfig();
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
   const accept = cfg.upload_allowed.map((e) => `.${e}`).join(",");
 
   function take(f?: File) {
     if (!f) return;
     const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
-    if (!cfg.upload_allowed.includes(ext)) return setErr(`Only ${cfg.upload_allowed.map((e) => e.toUpperCase()).join(" or ")} files can be read. This one is .${ext || "unknown"}.`);
-    if (f.size > cfg.upload_max_mb * 1024 * 1024) return setErr(`This file is ${(f.size / 1048576).toFixed(1)} MB. The limit is ${cfg.upload_max_mb} MB.`);
-    setErr(null);
+    if (!cfg.upload_allowed.includes(ext)) {
+      toast.error("That file cannot be used", {
+        description: `Only ${cfg.upload_allowed.map((e) => e.toUpperCase()).join(" or ")} files can be read. This one is .${ext || "unknown"}.`,
+      });
+      return;
+    }
+    if (f.size > cfg.upload_max_mb * 1024 * 1024) {
+      toast.error("That file cannot be used", {
+        description: `This file is ${(f.size / 1048576).toFixed(1)} MB. The limit is ${cfg.upload_max_mb} MB.`,
+      });
+      return;
+    }
     onFile(f);
   }
 
@@ -92,7 +100,6 @@ function UploadZone({ onFile, disabled }: { onFile: (f: File) => void; disabled?
         <Button variant="primary" size="lg" className="mt-5" disabled={disabled} onClick={() => input.current?.click()}><FileUp className="size-5" aria-hidden />Choose file</Button>
         <input ref={input} type="file" accept={accept} className="sr-only" tabIndex={-1} onChange={(e) => { take(e.target.files?.[0]); e.target.value = ""; }} />
       </div>
-      {err && <Alert kind="error" title="That file cannot be used" className="mt-3">{err}</Alert>}
     </div>
   );
 }
@@ -108,7 +115,6 @@ export function NewEntryView() {
   const [lab, setLab] = useState<string | null>(null);
   const [parsing, setParsing] = useState<string | null>(null);
   const [parse, setParse] = useState<ParseOut | null>(null);
-  const [parseError, setParseError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [decision, setDecision] = useState<DuplicateDecision | null>(null);
   const [showReport, setShowReport] = useState(false);
@@ -117,12 +123,11 @@ export function NewEntryView() {
   const defaults = useMemo(() => (fields ? toFormValues(fields, parse?.fields) : {}), [fields, parse]);
   const found = useMemo(() => (parse ? Object.entries(parse.fields).filter(([, v]) => (Array.isArray(v) ? v.length : v !== null && v !== undefined && v !== "")).map(([k]) => k) : []), [parse]);
 
-  const goto = (s: Step) => { setStep(s); if (s !== "form") setParseError(null); };
+  const goto = (s: Step) => setStep(s);
 
   async function onFile(file: File) {
     if (!lab) return;
     setParsing(file.name);
-    setParseError(null);
     try {
       const out = await parseReport(lab, file);
       setParse(out);
@@ -133,7 +138,15 @@ export function NewEntryView() {
         setParse(null);
         setStep("form");
         toast.info(e.message);
-      } else setParseError(errorMessage(e));
+      } else {
+        toast.error("Could not read that report", {
+          description: errorMessage(e),
+          action: {
+            label: "Type it in instead",
+            onClick: () => { setParse(null); setStep("form"); },
+          },
+        });
+      }
     } finally {
       setParsing(null);
     }
@@ -232,7 +245,6 @@ export function NewEntryView() {
               </div>
             </div>
           )}
-          {parseError && <Alert kind="error" title="Could not read that report" className="mt-4" action={<Button size="sm" onClick={() => { setParse(null); setStep("form"); }}>Type it in instead</Button>}>{parseError}</Alert>}
         </section>
       )}
 

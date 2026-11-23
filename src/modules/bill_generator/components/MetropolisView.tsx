@@ -32,7 +32,6 @@ function Flow({ labName }: { labName: string }) {
   const [file, setFile] = useState<File | null>(null);
   const [inspect, setInspect] = useState<LabInspect | null>(null);
   const [inspecting, setInspecting] = useState<string | null>(null);
-  const [inspectError, setInspectError] = useState<string | null>(null);
   const [amounts, setAmounts] = useState<string[]>([]);
   const [labCost, setLabCost] = useState("");
   /** Only used when the lab bill matches several possible entries: an entry id, or "new" for a different patient. */
@@ -45,7 +44,6 @@ function Flow({ labName }: { labName: string }) {
 
   async function onFile(f: File) {
     setInspecting(f.name);
-    setInspectError(null);
     try {
       const out = await inspectMetropolis(f);
       setFile(f);
@@ -56,14 +54,14 @@ function Flow({ labName }: { labName: string }) {
       setShowErrors(false);
       setPreview(null);
     } catch (e) {
-      setInspectError(errorMessage(e));
+      toast.error("Could not read that bill", { description: errorMessage(e) });
     } finally {
       setInspecting(null);
     }
   }
 
   function startOver() {
-    setFile(null); setInspect(null); setAmounts([]); setLabCost(""); setChoice(null); setShowErrors(false); setPreview(null); setInspectError(null);
+    setFile(null); setInspect(null); setAmounts([]); setLabCost(""); setChoice(null); setShowErrors(false); setPreview(null);
   }
 
   if (!inspect || !file)
@@ -78,7 +76,6 @@ function Flow({ labName }: { labName: string }) {
         ) : (
           <PdfUploadZone allowed={["pdf"]} onFile={onFile} title={`Upload the ${labName} bill`} hint={`Drop the lab’s own bill PDF here. Only its amount cells are changed.`} />
         )}
-        {inspectError && <Alert kind="error" title="Could not read that bill" className="mt-4">{inspectError}</Alert>}
       </>
     );
 
