@@ -16,6 +16,10 @@ http://localhost:8025; the bootstrap admin is `admin@example.com`.
 The browser only talks to this origin: `next.config.ts` proxies `/api/v1/*` to `BACKEND_URL`, so the httpOnly
 refresh cookie works without CORS.
 
+`GET /healthz` reports frontend availability with a non-cached `200` response and does not depend on the backend.
+Use it with an uptime monitor to check the deployed frontend. Production runs on Cloudflare Workers, which do not
+scale to zero and do not need keep-alive pings.
+
 ## Brand assets: put them here
 
 `public/brand/` (see `public/brand/README.md`): `logo-full.svg`, `logo-mark.svg`, `favicon.ico`, `icon-192.png`, `icon-512.png`.

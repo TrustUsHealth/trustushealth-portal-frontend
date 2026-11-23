@@ -12,7 +12,6 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       { source: "/api/v1/:path*", destination: `${BACKEND_URL}/api/v1/:path*` },
-      { source: "/healthz", destination: `${BACKEND_URL}/healthz` },
     ];
   },
   async headers() {
