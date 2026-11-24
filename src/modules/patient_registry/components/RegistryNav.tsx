@@ -2,20 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileSpreadsheet, Users, ClipboardList } from "lucide-react";
+import { FileSpreadsheet, Users, ClipboardList, RefreshCw } from "lucide-react";
+import { useAuth } from "@/core/auth/session";
 import { useTile } from "@/core/shell/tiles";
 import { cn } from "@/lib/utils";
 
-/** Submodule tabs. Excel Register only shows when the server lists it for this user. */
+/** Submodule tabs. Excel Register only shows when the server lists it for this user; Lab sync is for admins. */
 export function RegistryNav() {
   const path = usePathname();
+  const { isAdmin } = useAuth();
   const { tile } = useTile("patient_registry");
   const items = [
     { href: "/patient_registry", label: "Entries", icon: ClipboardList, show: true, exact: false },
     { href: "/patient_registry/customers", label: "Patients", icon: Users, show: true, exact: false },
     { href: "/patient_registry/excel_register", label: "Excel register", icon: FileSpreadsheet, show: !!tile?.submodules.some((s) => s.key === "excel_register") || tile === undefined, exact: false },
+    { href: "/patient_registry/lab_sync", label: "Lab sync", icon: RefreshCw, show: isAdmin, exact: false },
   ].filter((i) => i.show);
-  const active = (h: string) => (h === "/patient_registry" ? path === h || path.startsWith("/patient_registry/new") || /^\/patient_registry\/[^/]+$/.test(path) && !path.endsWith("customers") && !path.endsWith("excel_register") : path.startsWith(h));
+  const other = ["customers", "excel_register", "lab_sync"];
+  const active = (h: string) => (h === "/patient_registry" ? path === h || path.startsWith("/patient_registry/new") || /^\/patient_registry\/[^/]+$/.test(path) && !other.some((s) => path.endsWith(s)) : path.startsWith(h));
   return (
     <nav aria-label="Patient registry sections" className="scroll-x mb-5 flex gap-1 border-b border-line">
       {items.map((i) => {

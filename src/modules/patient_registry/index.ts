@@ -3,3 +3,4 @@ export { NewEntryView } from "./components/NewEntryView";
 export { EntryDetailView } from "./components/EntryDetailView";
 export { CustomersView, CustomerDetailView } from "./components/CustomersView";
 export { ExcelRegisterView } from "./components/ExcelRegisterView";
+export { LabSyncView } from "./components/LabSyncView";

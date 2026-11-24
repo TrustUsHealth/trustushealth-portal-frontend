@@ -12,17 +12,20 @@ import { Field, Input, Select } from "@/components/ui/input";
 import { EmptyState, PageHeader, Pagination, Skeleton } from "@/components/ui/misc";
 import { BillTag } from "@/components/bill-tag";
 import type { EntryQuery, EntrySummary } from "@/core/api/types";
+import { useAuth } from "@/core/auth/session";
 import { useAppConfig } from "@/core/config/provider";
 import { usePartners } from "@/core/shell/tiles";
 import { formatAge, formatDate, formatMoney, humanizeKey } from "@/lib/format";
 import { useEntries } from "../api";
 import { RegistryNav } from "./RegistryNav";
+import { SyncStatusChip } from "./SyncStatusChip";
 
 const FILTER_KEYS = ["partner_key", "status", "date_from", "date_to", "referred_by", "bill_no", "lab_pid"] as const;
 
 export function EntriesView() {
   const router = useRouter();
   const sp = useSearchParams();
+  const { isAdmin } = useAuth();
   const { currency } = useAppConfig();
   const { data: partners } = usePartners("patient_registry");
   const labName = (k: string) => partners?.find((p) => p.key === k)?.name ?? humanizeKey(k);
@@ -75,7 +78,12 @@ export function EntriesView() {
       <PageHeader
         title="Patient Registry"
         description="Every patient entry, one per lab visit. Search by name, lab patient ID or bill number."
-        actions={<Link href="/patient_registry/new" className={buttonStyles({ variant: "primary", size: "lg" })}><Plus className="size-5" aria-hidden />New entry</Link>}
+        actions={
+          <>
+            {isAdmin && <SyncStatusChip />}
+            <Link href="/patient_registry/new" className={buttonStyles({ variant: "primary", size: "lg" })}><Plus className="size-5" aria-hidden />New entry</Link>
+          </>
+        }
       />
       <RegistryNav />
 
