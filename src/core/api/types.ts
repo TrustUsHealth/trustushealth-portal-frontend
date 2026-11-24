@@ -112,3 +112,29 @@ export interface EntryQuery {
   q?: string; partner_key?: string; status?: EntryStatus | ""; referred_by?: string; date_from?: string;
   date_to?: string; bill_no?: string; lab_pid?: string; page?: number; page_size?: number;
 }
+
+// ── spectrum portal auto-sync (admin) ──
+/** Run status from the server: running | completed | completed_with_errors | partial | failed | interrupted. */
+export type SyncRunStatus = string;
+/** Visit (ledger row) status: done | failed | needs_review | processing. */
+export type SyncItemStatus = string;
+export interface SyncStats {
+  windows: number; rows_seen: number; already_done: number; exhausted: number; skipped_existing_entry: number;
+  would_process: number; attempted: number; created: number; merged: number; unchanged: number;
+  existing_conflict: number; needs_review: number; failed: number;
+}
+/** Give a `month` (YYYY-MM) OR `date_from` + `date_to`. */
+export interface SyncRunIn {
+  month?: string; date_from?: string; date_to?: string; dry_run?: boolean; retry_failed?: boolean;
+}
+export interface SyncRunStarted { run_id: string; status: string; date_from: string; date_to: string; dry_run: boolean }
+export interface SyncRun {
+  id: string; trigger: string; status: SyncRunStatus; dry_run: boolean; date_from: string; date_to: string;
+  started_at: string; finished_at?: string | null; message?: string | null; stats: SyncStats;
+}
+export interface SyncItem {
+  source_key: string; sid_no: string; sid_date: string; status: SyncItemStatus; outcome?: string | null;
+  attempts: number; entry_id?: string | null; report_ref?: string | null; last_error?: string | null;
+  warnings: string[]; updated_at?: string | null;
+}
+export interface SyncItemList { items: SyncItem[]; total: number }
