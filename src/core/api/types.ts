@@ -113,7 +113,7 @@ export interface EntryQuery {
   date_to?: string; bill_no?: string; lab_pid?: string; page?: number; page_size?: number;
 }
 
-// ── spectrum portal auto-sync (admin) ──
+// ── lab portal auto-sync (admin) ──
 /** Run status from the server: running | completed | completed_with_errors | partial | failed | interrupted. */
 export type SyncRunStatus = string;
 /** Visit (ledger row) status: done | failed | needs_review | processing. */
